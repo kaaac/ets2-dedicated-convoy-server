@@ -3,19 +3,13 @@
 
 services:
   ets2-server:
-    image: lshallo/ets2-convoy-server
-    # image: ghcr.io/lshallo/ets2-convoy-server # GitHub container registry
+    build: . # Build the image from the local Dockerfile
     container_name: ets2-server
     restart: unless-stopped
     tty: true
     network_mode: host # important to make game appear in server list
     # if you want to join via direct join token (displayed in logs on startup) you can use port mapping
     # the game will not appear in server list because the server can't determine the external IP
-    #ports:
-    #  - "27015:27015"
-    #  - "27016:27016"
-    #  - "27015:27015/udp"
-    #  - "27016:27016/udp"
     # volumes:
     # Server files. (executable, libraries)
     # Only mount if you know what you are doing. Can lead to permissions issues.
@@ -23,6 +17,8 @@ services:
     # Only needed when using custom server_packages.sii and server_packages.dat.
     # Also keeps banlist. If you want to persist the banlist mount this folder.
     #  - "/opt/ets2-server/save-data:/home/steam/.local/share/Euro Truck Simulator 2"
+    #volumes:
+    #  - ets2-data:/home/steam/.local/share/Euro Truck Simulator 2 # Shared data volume
     environment:
       - "ETS_SERVER_UPDATE_ON_START=true"
       - "ETS_SERVER_NAME=My Server"
@@ -34,30 +30,50 @@ services:
       - "ETS_SERVER_QUERY_PORT=27016"
       # more variables...
 
-  ats-server:
-    image: lshallo/ats-convoy-server
-    # image: ghcr.io/lshallo/ats-convoy-server # GitHub container registry
-    container_name: ats-server
-    restart: unless-stopped
-    tty: true
-    network_mode: host # important to make game appear in server list
-    # if you want to join via direct join token (displayed in logs on startup) you can use port mapping
-    # the game will not appear in server list because the server can't determine the external IP
-    #ports:
-    #  - "27015:27015"
-    #  - "27016:27016"
-    #  - "27015:27015/udp"
-    #  - "27016:27016/udp"
-    # volumes:
-    #  - "/opt/ats-server/game-data:/app" # server files
-    #  - "/opt/ats-server/save-data:/home/steam/.local/share/American Truck Simulator" # Only needed when using custom server_packages.sii and server_packages.dat
-    environment:
-      - "ETS_SERVER_UPDATE_ON_START=true"
-      - "ETS_SERVER_NAME=My Server"
-      - "ETS_SERVER_DESCRIPTION=My server description"
-      - "ETS_SERVER_WELCOME_MESSAGE=Welcome to my server!"
-      - "ETS_SERVER_PASSWORD=abc123"
-      - "ETS_SERVER_MAX_PLAYERS=8"
-      - "ETS_SERVER_PORT=27015"
-      - "ETS_SERVER_QUERY_PORT=27016"
-      # more variables...
+  #ats-server:
+  #  image: lshallo/ats-convoy-server
+  #  # image: ghcr.io/lshallo/ats-convoy-server # GitHub container registry
+  #  container_name: ats-server
+  #  restart: unless-stopped
+  #  tty: true
+  #  network_mode: host # important to make game appear in server list
+  #  # if you want to join via direct join token (displayed in logs on startup) you can use port mapping
+  #  # the game will not appear in server list because the server can't determine the external IP
+  #  #ports:
+  #  #  - "27015:27015"
+  #  #  - "27016:27016"
+  #  #  - "27015:27015/udp"
+  #  #  - "27016:27016/udp"
+  #  # volumes:
+  #  #  - "/opt/ats-server/game-data:/app" # server files
+  #  #  - "/opt/ats-server/save-data:/home/steam/.local/share/American Truck Simulator" # Only needed when using custom server_packages.sii and server_packages.dat
+  #  environment:
+  #    - "ETS_SERVER_UPDATE_ON_START=true"
+  #    - "ETS_SERVER_NAME=My Server"
+  #    - "ETS_SERVER_DESCRIPTION=My server description"
+  #    - "ETS_SERVER_WELCOME_MESSAGE=Welcome to my server!"
+  #    - "ETS_SERVER_PASSWORD=abc123"
+  #    - "ETS_SERVER_MAX_PLAYERS=8"
+  #    - "ETS_SERVER_PORT=27015"
+  #    - "ETS_SERVER_QUERY_PORT=27016"
+  #    # more variables...
+
+  #status-api:
+  #  build:
+  #    context: .
+  #    dockerfile: Dockerfile.status-api # Use the new Dockerfile for status-api
+  #  container_name: status-api
+  #  restart: unless-stopped
+  #  depends_on:
+  #    - ets2-server # Ensure ets2-server starts first
+  #  ports:
+  #    - "8080:8080" # Expose the API endpoint
+  #  volumes:
+  #    - ets2-data:/home/steam/.local/share/Euro Truck Simulator 2 # Mount shared data
+  #  environment:
+  #    - "FLASK_APP=ets_server_entrypoint.py"
+  #    - "FLASK_ENV=production"
+
+volumes:
+  ets2-data:
+    driver: local
