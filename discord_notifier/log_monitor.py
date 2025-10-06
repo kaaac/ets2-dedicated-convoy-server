@@ -22,6 +22,7 @@ class ETS2LogMonitor:
         # Player counters
         self.current_players = 0
         self.max_players = 8  # default value
+        self.max_players_found = False  # flag to track if max players was already found and logged
         
         # Message configuration from environment variables
         self.connect_icon = os.getenv('DISCORD_CONNECT_ICON', '🚛')
@@ -88,11 +89,14 @@ class ETS2LogMonitor:
         if '[Chat]' in line:
             return
         
-        # Check maximum number of players
+        # Check maximum number of players (only log once)
         max_players_match = self.max_players_pattern.search(line)
         if max_players_match:
-            self.max_players = int(max_players_match.group(1))
-            print(f"📊 Maximum number of players: {self.max_players}", flush=True)
+            new_max_players = int(max_players_match.group(1))
+            if not self.max_players_found or new_max_players != self.max_players:
+                self.max_players = new_max_players
+                self.max_players_found = True
+                print(f"📊 Maximum number of players: {self.max_players}", flush=True)
             return
         
         # Check player connection
@@ -137,6 +141,7 @@ class ETS2LogMonitor:
                 max_players_match = self.max_players_pattern.search(line)
                 if max_players_match:
                     self.max_players = int(max_players_match.group(1))
+                    self.max_players_found = True
             
             # Count current number of players based on historical logs
             connected_players = set()
